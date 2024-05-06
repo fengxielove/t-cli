@@ -1,6 +1,6 @@
 {
 	"name": "@t-cli/utils",
-	"version": "1.0.1",
+	"version": "1.0.0",
 	"description": "> TODO: description",
 	"author": "fengxie <1015806955@qq.com>",
 	"homepage": "",
@@ -18,5 +18,6 @@
 	},
 	"scripts": {
 		"test": "node ./__tests__/utils.test.js"
-	}
+	},
+	"gitHead": "ab5c5a01d71e055301b207fbb2f199933f584ae1"
 }
