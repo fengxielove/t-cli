@@ -1,0 +1,8 @@
+.vscode
+.idea
+.webstrom
+.fleet
+
+node_modules
+
+packages/**/node_modules

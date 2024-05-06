@@ -1,0 +1,22 @@
+{
+	"name": "t-cli",
+	"version": "1.0.0",
+	"description": "",
+	"main": "./bin/index.js",
+	"type": "module",
+	"bin": {
+		"t-cli": "./bin/index.js"
+	},
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"devDependencies": {
+		"lerna": "^8.1.2"
+	},
+	"dependencies": {
+		"fengxie-common-ui": "^1.0.0"
+	}
+}
