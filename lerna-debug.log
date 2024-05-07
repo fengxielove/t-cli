@@ -1,0 +1,17 @@
+42 error Error: Command failed with exit code 1: pnpm install --lockfile-only --ignore-scripts
+42 error Scope: all 3 workspace projects
+42 error  WARN  `node_modules` is present. Lockfile only installation will make it out-of-date
+42 error Progress: resolved 1, reused 0, downloaded 0, added 0
+42 error /Users/fengxie/2024/architect/t-cli/packages/core:
+42 error  ERR_PNPM_NO_MATCHING_VERSION  No matching version found for @t-cli/utils@^1.0.1
+42 error
+42 error This error happened while installing a direct dependency of /Users/fengxie/2024/architect/t-cli/packages/core
+42 error
+42 error The latest release of @t-cli/utils is "0.0.6-alpha.0".
+42 error
+42 error If you need the full list of all 2 published versions run "$ pnpm view @t-cli/utils versions".
+42 error     at makeError (/Users/fengxie/2024/architect/t-cli/node_modules/.pnpm/execa@5.0.0/node_modules/execa/lib/error.js:59:11)
+42 error     at handlePromise (/Users/fengxie/2024/architect/t-cli/node_modules/.pnpm/execa@5.0.0/node_modules/execa/index.js:114:26)
+42 error     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+42 error     at async VersionCommand.updatePackageVersions (/Users/fengxie/2024/architect/t-cli/node_modules/.pnpm/lerna@8.1.2_encoding@0.1.13/node_modules/lerna/dist/index.js:8436:11)
+42 error     at async Promise.all (index 0)

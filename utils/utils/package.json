@@ -1,11 +1,11 @@
 {
-	"name": "@t-cli/core",
-	"version": "1.0.0",
-	"description": "t-cli core",
+	"name": "@t-cli/utils",
+	"version": "1.0.2",
+	"description": "> TODO: description",
 	"author": "fengxie <1015806955@qq.com>",
 	"homepage": "",
 	"license": "ISC",
-	"main": "lib/core.js",
+	"main": "lib/index.js",
 	"directories": {
 		"lib": "lib",
 		"test": "__tests__"
@@ -14,13 +14,11 @@
 		"lib"
 	],
 	"publishConfig": {
-		"registry": "https://registry.npmmirror.com/"
+		"registry": "https://registry.npmmirror.com/",
+		"access": "public"
 	},
 	"scripts": {
-		"test": "echo \"Run testing from utils\""
-	},
-	"dependencies": {
-		"@t-cli/utils": "^1.0.1"
+		"test": "node ./__tests__/utils.test.js"
 	},
 	"gitHead": "ab5c5a01d71e055301b207fbb2f199933f584ae1"
 }
