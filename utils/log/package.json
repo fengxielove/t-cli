@@ -18,7 +18,8 @@
 		"lib"
 	],
 	"publishConfig": {
-		"registry": "https://registry.npmmirror.com/"
+		"registry": "https://registry.npmmirror.com/",
+		"access": "public"
 	},
 	"repository": {
 		"type": "git",
@@ -32,5 +33,6 @@
 	},
 	"dependencies": {
 		"npmlog": "^7.0.1"
-	}
+	},
+	"gitHead": "a9e4838fa9e19e35ac8e9f05e50a35e00ed1863e"
 }

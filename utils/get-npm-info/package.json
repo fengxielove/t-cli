@@ -15,7 +15,8 @@
     "lib"
   ],
   "publishConfig": {
-    "registry": "https://registry.npmmirror.com/"
+    "registry": "https://registry.npmmirror.com/",
+    "access": "public"
   },
   "repository": {
     "type": "git",
@@ -31,5 +32,6 @@
     "axios": "^1.6.8",
     "semver": "^7.6.0",
     "url-join": "^5.0.0"
-  }
+  },
+  "gitHead": "a9e4838fa9e19e35ac8e9f05e50a35e00ed1863e"
 }

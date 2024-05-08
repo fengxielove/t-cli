@@ -25,10 +25,10 @@
 		"test": "echo \"Run testing from utils\""
 	},
 	"dependencies": {
-		"@t-cli/exec": "workspace:*",
-		"@t-cli/get-npm-info": "workspace:*",
-		"@t-cli/init": "workspace:*",
-		"@t-cli/log": "workspace:*",
+		"@t-cli/exec": "1.0.6",
+		"@t-cli/get-npm-info": "1.0.6",
+		"@t-cli/init": "1.0.6",
+		"@t-cli/log": "1.0.6",
 		"chalk": "^5.1.0",
 		"commander": "^12.0.0",
 		"dotenv": "^16.4.5",
@@ -37,5 +37,5 @@
 		"semver": "^7.6.0",
 		"userhome": "^1.0.0"
 	},
-	"gitHead": "ab5c5a01d71e055301b207fbb2f199933f584ae1"
+	"gitHead": "a9e4838fa9e19e35ac8e9f05e50a35e00ed1863e"
 }

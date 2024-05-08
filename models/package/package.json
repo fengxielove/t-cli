@@ -15,7 +15,8 @@
     "lib"
   ],
   "publishConfig": {
-    "registry": "https://registry.npmmirror.com/"
+    "registry": "https://registry.npmmirror.com/",
+    "access": "public"
   },
   "repository": {
     "type": "git",
@@ -28,12 +29,13 @@
     "url": "https://github.com/fengxielove/t-cli/issues"
   },
   "dependencies": {
-    "@t-cli/format-path": "workspace:*",
-    "@t-cli/get-npm-info": "workspace:*",
-    "@t-cli/utils": "workspace:*",
+    "@t-cli/format-path": "1.0.6",
+    "@t-cli/get-npm-info": "1.0.6",
+    "@t-cli/utils": "1.0.6",
     "fs-extra": "^11.2.0",
     "npminstall": "^7.12.0",
     "path-exists": "^5.0.0",
     "pkg-dir": "^8.0.0"
-  }
+  },
+  "gitHead": "a9e4838fa9e19e35ac8e9f05e50a35e00ed1863e"
 }
