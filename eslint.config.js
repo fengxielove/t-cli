@@ -11,6 +11,11 @@ export default [
 	pluginJs.configs.recommended,
 	eslintConfigPrettier,
 	{
+		rules: {
+			'no-undef': 'off'
+		}
+	},
+	{
 		ignores: ['**/node_modules/**']
 	}
 ]

@@ -28,6 +28,7 @@
 		"@t-cli/get-npm-info": "workspace:*",
 		"@t-cli/init": "workspace:*",
 		"@t-cli/log": "workspace:*",
+		"@t-cli/exec": "workspace:*",
 		"chalk": "^5.1.0",
 		"commander": "^12.0.0",
 		"dotenv": "^16.4.5",

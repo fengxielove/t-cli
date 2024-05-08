@@ -1,0 +1,30 @@
+{
+  "name": "@t-cli/format-path",
+  "version": "1.0.0",
+  "description": "format-path to handle difference of different os path",
+  "author": "fengxie <1015806955@qq.com>",
+  "homepage": "https://github.com/fengxielove/t-cli#readme",
+  "license": "ISC",
+  "main": "lib/index.js",
+  "type": "module",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmmirror.com/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fengxielove/t-cli.git"
+  },
+  "scripts": {
+    "test": "node ./__tests__/@t-cli/format-path.test.js"
+  },
+  "bugs": {
+    "url": "https://github.com/fengxielove/t-cli/issues"
+  }
+}
