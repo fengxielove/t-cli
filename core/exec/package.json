@@ -29,8 +29,8 @@
     "url": "https://github.com/fengxielove/t-cli/issues"
   },
   "dependencies": {
-    "@t-cli/log": "1.0.6",
-    "@t-cli/package": "1.0.6"
+    "@t-cli/log": "workspace:*",
+    "@t-cli/package": "workspace:*"
   },
   "gitHead": "a9e4838fa9e19e35ac8e9f05e50a35e00ed1863e"
 }
