@@ -1,11 +1,10 @@
 import semver from 'semver'
 import chalk from 'chalk';
 import rootCheck from "root-check";
-import minimist from "minimist";
 import userHome from 'userhome'
 import { pathExistsSync } from "path-exists";
 import dotenv from 'dotenv';
-import { createCommand, Command } from 'commander'
+import { Command } from 'commander'
 
 import { resolve, join } from 'path';
 
@@ -86,6 +85,8 @@ const checkGlobalUpdate = async () => {
     }
 }
 
+// 脚手架初始化阶段
+// 注册命令
 const registerCommand = () => {
     program
         .name(Object.keys(pkg.default.bin)[0])
@@ -93,9 +94,13 @@ const registerCommand = () => {
         .version(pkg.default.version)
         .option('-d, --debug', '是否开启调试模式', false)
         .option('-e, --envName <envName>', '获取环境变量名称')
+        .option('-tp, --targetPath <targetPath>', '是否指定本地调试文件路径', '')
 
-    program.command('init [projectName]').option('-f, --force', '是否强制初始化项目')
+    program
+        .command('init [projectName]')
+        .option('-f, --force', '是否强制初始化项目')
         .action(init)
+
     // 监听 debug
     program.on('option:debug', () => {
         if (program.getOptionValue('debug') === true) {
@@ -104,7 +109,11 @@ const registerCommand = () => {
             process.env.LOG_LEVEL = 'info'
         }
         log.level = process.env.LOG_LEVEL
-        log.verbose('test', 12313)
+    })
+
+    // 指定targetPath
+    program.on('option:targetPath', () => {
+        process.env.CLI_TARGET_PATH = program.getOptionValue('targetPath')
     })
 
     // 监听未知命令
@@ -121,16 +130,19 @@ const registerCommand = () => {
     program.parse(process.argv)
 }
 
+const prepare = async () => {
+    checkPkgVersion();
+    checkNodeVersion();
+    checkRoot()
+    checkUserHome()
+    checkEnv()
+    // await checkGlobalUpdate()
+}
+
 export const core = async () => {
     try {
-        checkPkgVersion();
-        checkNodeVersion();
-        checkRoot()
-        checkUserHome()
-        checkEnv()
-        // await checkGlobalUpdate()
+        await prepare()
         registerCommand()
-
     } catch (error) {
         log.warn('error', error.message)
     }
