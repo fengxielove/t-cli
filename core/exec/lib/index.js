@@ -1,4 +1,6 @@
 import { resolve } from 'path'
+import { spawn } from 'child_process'
+
 import { Package } from '@t-cli/package'
 import npmlog from '@t-cli/log'
 
@@ -53,11 +55,58 @@ export const exec = async (...args) => {
 	}
 
 	const rootFile = await pkg.getRootFilePath()
-	console.log('rootFile', rootFile)
 	if (rootFile) {
-		const execFile = (await import(rootFile)).default
-		if (typeof execFile === 'function') {
-			execFile.apply(null, args)
+		try {
+			const execFile = (await import(rootFile)).default
+			if (typeof execFile === 'function') {
+				// 执行入口文件的代码: 第一种 在当前进程中执行
+				// execFile.call(null, args)
+
+				// 精简 args 中的数据 START
+				// const cmd = args.at(-1)
+				// const newObj = Object.create(null)
+				// Object.keys(cmd).forEach((key) => {
+				// 	if (
+				// 		Object.prototype.hasOwnProperty.call(cmd, key) &&
+				// 		!key.startsWith('_') &&
+				// 		key !== 'parent'
+				// 	) {
+				// 		newObj[key] = cmd[key]
+				// 	}
+				// })
+				// args[args.length - 1] = newObj
+				// console.log('args', args)
+				// 精简 args 中的数据 END
+
+				const child = cSpawn('node', ['-e', execFile, args], {
+					cwd: process.cwd(),
+					stdio: 'inherit'
+				})
+				child.on('error', (error) => {
+					npmlog.error(error.message)
+				})
+
+				child.on('exit', (info) => {
+					npmlog.verbose('命令执行成功')
+					process.exit(info)
+				})
+			}
+		} catch (error) {
+			npmlog.error(error.message)
 		}
 	}
+}
+
+/**
+ * 自定义  cSpawn 函数，处理操作系统间的差异性
+ * @param command
+ * @param args
+ * @param options
+ */
+const cSpawn = (command, args, options) => {
+	// 判断是否是 windows 操作系统
+	const win32 = process.platform === 'win32'
+	const cmd = win32 ? 'cmd' : command
+	const cmdArgs = win32 ? ['/c'].concat(command, args) : args
+	return spawn(cmd, cmdArgs, options || {})
 }

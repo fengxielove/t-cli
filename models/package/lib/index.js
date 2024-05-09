@@ -137,12 +137,18 @@ export class Package {
 
 		// 使用缓存的情况
 		if (this.storeDir) {
-			console.log('使用缓存的时入口文件地址', _getRootFile(this.cacheFilePath))
-			return _getRootFile(this.cacheFilePath)
+			console.log(
+				'使用缓存的时入口文件地址',
+				await _getRootFile(this.cacheFilePath)
+			)
+			return await _getRootFile(this.cacheFilePath)
 		} else {
 			// 没有缓存的情况
-			console.log('不使用缓存的时入口文件地址', _getRootFile(this.targetPath))
-			return _getRootFile(this.targetPath)
+			console.log(
+				'不使用缓存的时入口文件地址',
+				await _getRootFile(this.targetPath)
+			)
+			return await _getRootFile(this.targetPath)
 		}
 	}
 }

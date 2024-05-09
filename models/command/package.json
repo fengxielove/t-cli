@@ -1,7 +1,7 @@
 {
-  "name": "@t-cli/init",
+  "name": "@t-cli/command",
   "version": "1.0.6",
-  "description": "init命令",
+  "description": "a command manager for t-cli",
   "author": "fengxie <1015806955@qq.com>",
   "homepage": "https://github.com/fengxielove/t-cli#readme",
   "license": "ISC",
@@ -11,26 +11,27 @@
     "lib": "lib",
     "test": "__tests__"
   },
-  "files": [
-    "lib"
-  ],
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
     "access": "public"
   },
+  "files": [
+    "lib"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fengxielove/t-cli.git"
   },
   "scripts": {
-    "test": "node ./__tests__/@t-cli/init.test.js"
-  },
-  "devDependencies": {
-    "@t-cli/command": "workspace:*",
-    "@t-cli/log": "workspace:*"
+    "test": "node ./__tests__/command.test.js"
   },
   "bugs": {
     "url": "https://github.com/fengxielove/t-cli/issues"
   },
-  "gitHead": "a9e4838fa9e19e35ac8e9f05e50a35e00ed1863e"
+  "dependencies": {
+    "chalk": "^5.1.0",
+    "semver": "^7.6.0",
+    "@t-cli/log": "workspace:*",
+    "@t-cli/utils": "workspace:*"
+  }
 }
