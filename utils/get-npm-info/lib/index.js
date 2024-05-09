@@ -3,9 +3,7 @@ import urlJoin from 'url-join'
 import semver from 'semver'
 
 export const getNpmInfo = async (npmName, registry) => {
-	console.log(npmName)
 	if (!npmName) return null
-
 	registry = registry || getDefaultRegistry()
 	const npmInfoUrl = urlJoin(registry, npmName)
 	const result = await axios.get(npmInfoUrl)

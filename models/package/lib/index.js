@@ -26,7 +26,7 @@ export class Package {
 		// package 的 version
 		this.packageVersion = options?.packageVersion
 
-		this.cacheFilePathPrefix = this.packageName.replace('/', '_')
+		this.cacheFilePathPrefix = this.packageName.replace('/', '+')
 	}
 
 	async prepare() {
@@ -35,13 +35,15 @@ export class Package {
 		}
 		if (this.packageVersion === 'latest') {
 			this.packageVersion = await getNpmLatestVersion(this.packageName)
+			console.log('准备阶段获取最新的版本号', this.packageVersion)
 		}
 	}
 
 	get cacheFilePath() {
 		return resolve(
 			this.storeDir,
-			`_${this.cacheFilePathPrefix}@${this.packageVersion}@${this.packageName}`
+			'.store',
+			`${this.cacheFilePathPrefix}@${this.packageVersion}/node_modules/${this.packageName}`
 		)
 	}
 
@@ -49,16 +51,15 @@ export class Package {
 	getSpecificCacheFilePath(packageVersion) {
 		return resolve(
 			this.storeDir,
-			`_${this.cacheFilePathPrefix}@${packageVersion}@${this.packageName}`
+			'.store',
+			`${this.cacheFilePathPrefix}@${packageVersion}/node_modules/${this.packageName}`
 		)
 	}
 
 	async exists() {
 		if (this.storeDir) {
 			await this.prepare()
-			// TODO: 测试用注释
-			// return pathExistsSync(this.cacheFilePath)
-			return pathExistsSync(this.storeDir)
+			return pathExistsSync(this.cacheFilePath)
 		} else {
 			return pathExistsSync(this.targetPath)
 		}
@@ -90,6 +91,7 @@ export class Package {
 		// 	2.查询最新版本号对应的路径是否存在
 		const latestFilePath = this.getSpecificCacheFilePath(latestPackageVersion)
 		console.log('最新版本号路径', latestFilePath)
+		console.log('最新版本号路径是否存在', pathExistsSync(latestFilePath))
 		// 	3.如果不存在，则更新(安装)
 		if (!pathExistsSync(latestFilePath)) {
 			await npmInstall({
@@ -135,10 +137,11 @@ export class Package {
 
 		// 使用缓存的情况
 		if (this.storeDir) {
-			// return _getRootFile(this.cacheFilePath)
-			return _getRootFile(this.storeDir)
+			console.log('使用缓存的时入口文件地址', _getRootFile(this.cacheFilePath))
+			return _getRootFile(this.cacheFilePath)
 		} else {
 			// 没有缓存的情况
+			console.log('不使用缓存的时入口文件地址', _getRootFile(this.targetPath))
 			return _getRootFile(this.targetPath)
 		}
 	}

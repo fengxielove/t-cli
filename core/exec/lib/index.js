@@ -3,8 +3,7 @@ import { Package } from '@t-cli/package'
 import npmlog from '@t-cli/log'
 
 const SETTINGS = {
-	// init: '@t-cli/init'
-	init: '@imooc-cli/init'
+	init: '@t-cli/init'
 }
 
 const CACHE_DIR = 'test-dependencies'
