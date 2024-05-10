@@ -32,5 +32,10 @@
   "bugs": {
     "url": "https://github.com/fengxielove/t-cli/issues"
   },
-  "gitHead": "a9e4838fa9e19e35ac8e9f05e50a35e00ed1863e"
+  "gitHead": "a9e4838fa9e19e35ac8e9f05e50a35e00ed1863e",
+  "dependencies": {
+    "fs-extra": "^11.2.0",
+    "inquirer": "^9.2.20",
+    "semver": "^7.6.0"
+  }
 }

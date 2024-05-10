@@ -1,5 +1,5 @@
 import { resolve } from 'path'
-import { spawn } from 'child_process'
+import { spawnSync, spawn } from 'child_process'
 
 import { Package } from '@t-cli/package'
 import npmlog from '@t-cli/log'
@@ -55,41 +55,27 @@ export const exec = async (...args) => {
 	}
 
 	const rootFile = await pkg.getRootFilePath()
+	npmlog.info('入口代码地址', rootFile)
 	if (rootFile) {
 		try {
 			const execFile = (await import(rootFile)).default
 			if (typeof execFile === 'function') {
 				// 执行入口文件的代码: 第一种 在当前进程中执行
-				// execFile.call(null, args)
+				execFile.call(null, args)
 
-				// 精简 args 中的数据 START
-				// const cmd = args.at(-1)
-				// const newObj = Object.create(null)
-				// Object.keys(cmd).forEach((key) => {
-				// 	if (
-				// 		Object.prototype.hasOwnProperty.call(cmd, key) &&
-				// 		!key.startsWith('_') &&
-				// 		key !== 'parent'
-				// 	) {
-				// 		newObj[key] = cmd[key]
-				// 	}
+				// 第二种：在子进程中执行
+				// const child = cSpawn('node', ['-e', execFile, args], {
+				// 	cwd: process.cwd(),
+				// 	stdio: 'inherit'
 				// })
-				// args[args.length - 1] = newObj
-				// console.log('args', args)
-				// 精简 args 中的数据 END
-
-				const child = cSpawn('node', ['-e', execFile, args], {
-					cwd: process.cwd(),
-					stdio: 'inherit'
-				})
-				child.on('error', (error) => {
-					npmlog.error(error.message)
-				})
-
-				child.on('exit', (info) => {
-					npmlog.verbose('命令执行成功')
-					process.exit(info)
-				})
+				// child.on('error', (error) => {
+				// 	npmlog.error(error.message)
+				// })
+				//
+				// child.on('exit', (info) => {
+				// 	npmlog.verbose('命令执行成功', info)
+				// 	process.exit(info)
+				// })
 			}
 		} catch (error) {
 			npmlog.error(error.message)

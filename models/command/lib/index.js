@@ -2,8 +2,6 @@ import semver from 'semver'
 import chalk from 'chalk'
 import npmlog from '@t-cli/log'
 
-import { isObject } from '@t-cli/utils'
-
 export const LOWEST_NODE_VERSION = '18.0.0'
 
 class Command {
@@ -18,7 +16,7 @@ class Command {
 			throw new Error('参数列表为空')
 		}
 		this._argv = argv
-		let runner = new Promise((resolve, reject) => {
+		new Promise((resolve, reject) => {
 			let chain = Promise.resolve()
 			chain = chain.then(() => this.checkNodeVersion())
 			chain = chain.then(() => this.initArgs())
