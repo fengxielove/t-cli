@@ -1,20 +1,25 @@
 import { readdirSync } from 'fs'
 import { resolve } from 'path'
-
 import inquirer from 'inquirer'
-import { emptyDirSync } from 'fs-extra'
+import fsExtra from 'fs-extra'
 import { valid } from 'semver'
 import userHome from 'userhome'
+import kebabCase from 'kebab-case'
+import { globSync } from 'glob'
+import ejs from 'ejs'
+import { writeFileSync } from 'fs'
 
 import Command from '@t-cli/command'
 import npmlog from '@t-cli/log'
 import { Package } from '@t-cli/package'
-import { spinnerStart } from '@t-cli/utils'
-
+import { spinnerStart, execSync } from '@t-cli/utils'
 import { getNpmTemplates } from './getTemplates.js'
 
 const TYPE_PROJECT = 'project'
 const TYPE_COMPONENT = 'component'
+const TEMPLATE_TYPE_NORMAL = 'normal'
+const TEMPLATE_TYPE_CUSTOM = 'custom'
+const WHITE_COMMAND = ['npm', 'pnpm', 'yarn']
 
 export class InitCommand extends Command {
 	init() {
@@ -34,6 +39,7 @@ export class InitCommand extends Command {
 				// 	2. 下载模版
 				await this.downloadTemplate()
 				// 	3. 安装模板
+				await this.installTemplate()
 			}
 		} catch (e) {
 			npmlog.error(e)
@@ -70,7 +76,9 @@ export class InitCommand extends Command {
 				})
 				if (confirmDelete) {
 					// 	清空文件夹
-					emptyDirSync(localPath)
+					fsExtra.emptyDirSync(localPath)
+				} else {
+					return
 				}
 			}
 		}
@@ -87,7 +95,7 @@ export class InitCommand extends Command {
 	}
 
 	async getProjectInfo() {
-		let projectInfo = null
+		let projectInfo = {}
 		const { type } = await inquirer.prompt({
 			type: 'list',
 			name: 'type',
@@ -105,29 +113,29 @@ export class InitCommand extends Command {
 			]
 		})
 
+		let projectNameIsValid = false
+		if (isValidateProjectName(this.projectName)) {
+			projectNameIsValid = true
+			projectInfo.projectName = this.projectName
+		}
 		if (type === TYPE_PROJECT) {
-			const project = await inquirer.prompt([
-				{
-					type: 'input',
-					name: 'projectName',
-					message: '请输入项目名称',
-					default: '',
-					validate: function (v) {
-						const done = this.async()
-						// 1.首字符必须为英文字符
-						// 2.尾字符必须为英文或数字，不能为空字符
-						// 3.字符仅允许"-_"
-						// 合法：a, a-b, a_b,a-b-c,a_b_c, a-b1-c1, a_b1_c1
-						// 不合法：1,a_,a-,a_1,a-1
-						const regExp =
-							/^[a-zA-Z]+(-[a-zA-Z][a-zA-Z0-9]*|_[a-zA-Z][a-zA-Z0-9]*|[a-zA-Z0-9])*$/
-						if (regExp.test(v)) {
-							done(null, true)
-						} else {
-							done('请输入合法的项目名')
-						}
+			const projectNamePrompt = {
+				type: 'input',
+				name: 'projectName',
+				message: '请输入项目名称',
+				default: '',
+				validate: function (v) {
+					const done = this.async()
+
+					if (isValidateProjectName(v)) {
+						done(null, true)
+					} else {
+						done('请输入合法的项目名')
 					}
-				},
+				}
+			}
+
+			const createProjectPrompt = [
 				{
 					type: 'input',
 					name: 'projectVersion',
@@ -151,13 +159,31 @@ export class InitCommand extends Command {
 					message: '请选择项目模板',
 					choices: this.createTemplateChoice()
 				}
-			])
+			]
+			if (!projectNameIsValid) {
+				createProjectPrompt.unshift(projectNamePrompt)
+			}
+			const project = await inquirer.prompt(createProjectPrompt)
 
 			projectInfo = {
+				...projectInfo,
 				type,
 				...project
 			}
 		} else if (type === TYPE_COMPONENT) {
+			// 	TODO:
+		}
+
+		// 将项目名称改为驼峰格式
+		if (projectInfo?.projectName) {
+			projectInfo.className = kebabCase(projectInfo.projectName).replace(
+				/^-/,
+				''
+			)
+			npmlog.verbose('className', projectInfo.className)
+		}
+		if (projectInfo?.projectVersion) {
+			projectInfo.version = projectInfo.projectVersion
 		}
 
 		return projectInfo
@@ -182,6 +208,7 @@ export class InitCommand extends Command {
 		const templateInfo = this.templates.find(
 			(item) => item.npmName === projectTemplate
 		)
+		this.templateInfo = templateInfo
 		const targetPath = resolve(userHome(), '.t-cli', 'template')
 		const storeDir = resolve(userHome(), '.t-cli', 'template', 'node_modules')
 		const { npmName, version } = templateInfo
@@ -198,6 +225,7 @@ export class InitCommand extends Command {
 			try {
 				await templateNpm.install()
 				spinner.succeed('模版下载成功!')
+				this.templateNpm = templateNpm
 			} catch (error) {
 				npmlog.error(error.message)
 				spinner.fail('模版下载失败，请检查版本号')
@@ -207,12 +235,135 @@ export class InitCommand extends Command {
 			try {
 				await templateNpm.update()
 				spinner.succeed('模版更新成功!')
+				this.templateNpm = templateNpm
 			} catch (error) {
 				npmlog.error(error.message)
 				spinner.fail('模版更新失败，请检查版本号')
 			}
 		}
 	}
+
+	async installTemplate() {
+		npmlog.verbose('installTemplate', this.templateInfo)
+		if (this.templateInfo) {
+			if (!this.templateInfo.type) {
+				this.templateInfo.type = TEMPLATE_TYPE_NORMAL
+			}
+			if (this.templateInfo.type === TEMPLATE_TYPE_NORMAL) {
+				// 	标准安装
+				await this.installNormalTemplate()
+			} else if (this.templateInfo.type === TEMPLATE_TYPE_CUSTOM) {
+				// 	自定义安装
+				await this.installCustomTemplate()
+			} else {
+				throw new Error('项目模板类型错误')
+			}
+		} else {
+			throw new Error('项目模板信息不存在')
+		}
+	}
+
+	async installNormalTemplate() {
+		// 模板代码的目录
+		const templatePath = resolve(
+			this.templateNpm.storeDir,
+			this.templateNpm.packageName,
+			'template'
+		)
+		const targetPath = process.cwd()
+
+		ensureAndCopyFiles(templatePath, targetPath)
+		const ignore = ['node_modules', 'public/**', 'index.html']
+		await this.ejsRender(ignore)
+		const { installCommand, startCommand } = this.templateInfo
+		await executeCommand(installCommand, '安装模板依赖')
+		await executeCommand(startCommand, '启动模版服务')
+	}
+	ejsRender(options) {
+		const dir = process.cwd()
+		let projectInfo = this.projectInfo
+		const files = globSync('**', {
+			cwd: dir,
+			nodir: true,
+			ignore: options.ignore || ''
+		})
+		if (files) {
+			Promise.all(
+				files.map((file) => {
+					const filePath = resolve(dir, file)
+					return new Promise((resolve, reject) => {
+						ejs.renderFile(filePath, projectInfo, (err, html) => {
+							if (err) {
+								reject(err)
+							} else {
+								writeFileSync(filePath, html)
+								resolve(html)
+							}
+						})
+					})
+				})
+			)
+				.then(() => {})
+				.catch((error) => {
+					throw new Error(error.message)
+				})
+			return files
+		} else {
+			return []
+		}
+	}
+	async installCustomTemplate() {
+		npmlog.verbose('自定义安装')
+	}
+}
+
+// 确保目录存在并且复制文件
+const ensureAndCopyFiles = (templatePath, targetPath) => {
+	const spinner = spinnerStart('正在安装模板')
+	try {
+		fsExtra.ensureDirSync(templatePath, {})
+		fsExtra.ensureDirSync(targetPath, {})
+		fsExtra.copySync(templatePath, targetPath)
+		spinner.succeed('模板安装成功!')
+	} catch (error) {
+		spinner.fail('模板安装失败!')
+		throw new Error(error.message)
+	}
+}
+
+// 执行命令
+const executeCommand = async (command, message) => {
+	const spinner = spinnerStart(`正在${message}`)
+	const [cmd, ...args] = command.split(' ')
+	if (WHITE_COMMAND.includes(cmd)) {
+		const result = await execSync(cmd, args, {
+			stdio: 'inherit',
+			cwd: process.cwd()
+		})
+		npmlog.info('命令执行结果', result)
+		if (result !== 0) {
+			spinner.fail(`${message}失败`)
+			throw new Error(`${message}失败`)
+		}
+		spinner.succeed(`${message}成功`)
+	} else {
+		throw new Error('请配置合法的命令')
+	}
+}
+
+/**
+ * 1.首字符必须为英文字符
+ * 2.尾字符必须为英文或数字，不能为空字符
+ * 3.字符仅允许"-_"
+ * 合法：a, a-b, a_b,a-b-c,a_b_c, a-b1-c1, a_b1_c1
+ * 不合法：1,a_,a-,a_1,a-1
+ * @param name
+ * @returns {boolean}
+ */
+const isValidateProjectName = (name) => {
+	const regExp =
+		/^[a-zA-Z]+(-[a-zA-Z][a-zA-Z0-9]*|_[a-zA-Z][a-zA-Z0-9]*|[a-zA-Z0-9])*$/
+	return regExp.test(name)
 }
 
 /**

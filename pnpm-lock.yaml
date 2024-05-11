@@ -45,12 +45,24 @@ importers:
       '@t-cli/utils':
         specifier: workspace:*
         version: link:../../utils/utils
+      ejs:
+        specifier: ^3.1.10
+        version: 3.1.10
       fs-extra:
         specifier: ^11.2.0
         version: 11.2.0
+      glob:
+        specifier: ^10.3.14
+        version: 10.3.14
       inquirer:
         specifier: ^9.2.20
         version: 9.2.20
+      kebab-case:
+        specifier: ^1.0.2
+        version: 1.0.2
+      path-exists:
+        specifier: ^5.0.0
+        version: 5.0.0
       semver:
         specifier: ^7.6.0
         version: 7.6.0
@@ -126,6 +138,9 @@ importers:
       '@t-cli/get-npm-info':
         specifier: workspace:*
         version: link:../../utils/get-npm-info
+      '@t-cli/log':
+        specifier: workspace:*
+        version: link:../../utils/log
       '@t-cli/utils':
         specifier: workspace:*
         version: link:../../utils/utils
@@ -1384,6 +1399,11 @@ packages:
     engines: {node: '>=16 || 14 >=14.17'}
     hasBin: true
 
+  glob@10.3.14:
+    resolution: {integrity: sha512-4fkAqu93xe9Mk7le9v0y3VrPDqLKHarNi2s4Pv7f2yOvfhWfhc7hRPHC/JyqMqb8B/Dt/eGS4n7ykwf3fOsl8g==}
+    engines: {node: '>=16 || 14 >=14.17'}
+    hasBin: true
+
   glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
 
@@ -1754,6 +1774,9 @@ packages:
 
   just-diff@6.0.2:
     resolution: {integrity: sha512-S59eriX5u3/QhMNq3v/gm8Kd0w8OS6Tz2FS1NG4blv+z0MuQcBRJyFWjdovM0Rad4/P4aUPFtnkNjMjyMlMSYA==}
+
+  kebab-case@1.0.2:
+    resolution: {integrity: sha512-7n6wXq4gNgBELfDCpzKc+mRrZFs7D+wgfF5WRFLNAr4DA/qtr9Js8uOAVAfHhuLMfAcQ0pRKqbpjx+TcJVdE1Q==}
 
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
@@ -2346,6 +2369,10 @@ packages:
 
   path-scurry@1.10.2:
     resolution: {integrity: sha512-7xTavNy5RQXnsjANvVvMkEjvloOinkAjv/Z6Ildz9v2RinZ4SBKTWFOVRbaF8p0vpHnyjV/UwNDdKuUv6M5qcA==}
+    engines: {node: '>=16 || 14 >=14.17'}
+
+  path-scurry@1.11.0:
+    resolution: {integrity: sha512-LNHTaVkzaYaLGlO+0u3rQTz7QrHTFOuKyba9JMTQutkmtNew8dw8wOD7mTU/5fCPZzCWpfW0XnQKzY61P0aTaw==}
     engines: {node: '>=16 || 14 >=14.17'}
 
   path-type@3.0.0:
@@ -4491,6 +4518,14 @@ snapshots:
       minipass: 7.1.0
       path-scurry: 1.10.2
 
+  glob@10.3.14:
+    dependencies:
+      foreground-child: 3.1.1
+      jackspeak: 2.3.6
+      minimatch: 9.0.4
+      minipass: 7.1.0
+      path-scurry: 1.11.0
+
   glob@7.2.3:
     dependencies:
       fs.realpath: 1.0.0
@@ -4859,6 +4894,8 @@ snapshots:
   just-diff-apply@5.5.0: {}
 
   just-diff@6.0.2: {}
+
+  kebab-case@1.0.2: {}
 
   keyv@4.5.4:
     dependencies:
@@ -5771,6 +5808,11 @@ snapshots:
   path-parse@1.0.7: {}
 
   path-scurry@1.10.2:
+    dependencies:
+      lru-cache: 10.2.2
+      minipass: 7.1.0
+
+  path-scurry@1.11.0:
     dependencies:
       lru-cache: 10.2.2
       minipass: 7.1.0

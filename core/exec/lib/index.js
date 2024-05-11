@@ -1,5 +1,5 @@
 import { resolve } from 'path'
-import { spawnSync, spawn } from 'child_process'
+import { spawn } from 'child_process'
 
 import { Package } from '@t-cli/package'
 import npmlog from '@t-cli/log'
