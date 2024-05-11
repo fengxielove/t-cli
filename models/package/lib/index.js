@@ -26,6 +26,7 @@ export class Package {
 		// package 的 version
 		this.packageVersion = options?.packageVersion
 
+		// TODO: 在mac系统上，此字段暂时无用，后续验证 windows的情况
 		this.cacheFilePathPrefix = this.packageName.replace('/', '+')
 	}
 
@@ -39,21 +40,23 @@ export class Package {
 		}
 	}
 
+	// 这里不需要拼接全路径地址，通过软链可以直接获取到
 	get cacheFilePath() {
-		return resolve(
-			this.storeDir,
-			'.store',
-			`${this.cacheFilePathPrefix}@${this.packageVersion}/node_modules/${this.packageName}`
-		)
+		// return resolve(
+		// 	this.storeDir,
+		// 	`${this.cacheFilePathPrefix}@${this.packageVersion}/node_modules/${this.packageName}`
+		// )
+		return resolve(this.storeDir, `${this.packageName}`)
 	}
 
 	// 获取指定版本的 缓存路径
 	getSpecificCacheFilePath(packageVersion) {
-		return resolve(
-			this.storeDir,
-			'.store',
-			`${this.cacheFilePathPrefix}@${packageVersion}/node_modules/${this.packageName}`
-		)
+		// return resolve(
+		// 	this.storeDir,
+		// 	'.store',
+		// 	`${this.cacheFilePathPrefix}@${packageVersion}/node_modules/${this.packageName}`
+		// )
+		return resolve(this.storeDir, `${this.packageName}`)
 	}
 
 	async exists() {
