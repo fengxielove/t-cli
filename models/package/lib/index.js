@@ -7,6 +7,7 @@ import { mkdirpSync } from 'fs-extra'
 
 import { isObject } from '@t-cli/utils'
 import { formatPath } from '@t-cli/format-path'
+import npmlog from '@t-cli/log'
 import { getDefaultRegistry, getNpmLatestVersion } from '@t-cli/get-npm-info'
 
 export class Package {
@@ -36,7 +37,7 @@ export class Package {
 		}
 		if (this.packageVersion === 'latest') {
 			this.packageVersion = await getNpmLatestVersion(this.packageName)
-			console.log('准备阶段获取最新的版本号', this.packageVersion)
+			npmlog.verbose('从NPM处获取包名的最新版本', this.packageVersion)
 		}
 	}
 
@@ -49,14 +50,14 @@ export class Package {
 		return resolve(this.storeDir, `${this.packageName}`)
 	}
 
-	// 获取指定版本的 缓存路径
+	// ⚠️FIX:BUG
+	// 获取指定版本的缓存路径: 必须从 .store 中去拼接版本号获取，默认的软链指向的始终是旧版本的
 	getSpecificCacheFilePath(packageVersion) {
-		// return resolve(
-		// 	this.storeDir,
-		// 	'.store',
-		// 	`${this.cacheFilePathPrefix}@${packageVersion}/node_modules/${this.packageName}`
-		// )
-		return resolve(this.storeDir, `${this.packageName}`)
+		return resolve(
+			this.storeDir,
+			'.store',
+			`${this.cacheFilePathPrefix}@${packageVersion}/node_modules/${this.packageName}`
+		)
 	}
 
 	async exists() {
@@ -90,11 +91,11 @@ export class Package {
 		await this.prepare()
 		// 	1.获取最新的版本号
 		const latestPackageVersion = await getNpmLatestVersion(this.packageName)
-		console.log('最新版本号', latestPackageVersion)
+		npmlog.verbose('NPM上最新版本号', latestPackageVersion)
 		// 	2.查询最新版本号对应的路径是否存在
 		const latestFilePath = this.getSpecificCacheFilePath(latestPackageVersion)
-		console.log('最新版本号路径', latestFilePath)
-		console.log('最新版本号路径是否存在', pathExistsSync(latestFilePath))
+		npmlog.verbose('最新版本号在本地的拼接路径', latestFilePath)
+		npmlog.verbose('最新版本号在本地是否存在', pathExistsSync(latestFilePath))
 		// 	3.如果不存在，则更新(安装)
 		if (!pathExistsSync(latestFilePath)) {
 			await npmInstall({
@@ -108,9 +109,9 @@ export class Package {
 					}
 				]
 			})
-			// 	更新了最新版本后，修改版本号
-			this.packageVersion = latestPackageVersion
 		}
+		// 	更新了最新版本后，修改版本号
+		this.packageVersion = latestPackageVersion
 	}
 
 	/**
@@ -122,9 +123,7 @@ export class Package {
 	 */
 	async getRootFilePath() {
 		const _getRootFile = async (needPath) => {
-			console.log('needPath', needPath)
 			const dir = packageDirectorySync({ cwd: needPath })
-			console.log('dir', dir)
 			if (dir) {
 				const packageJsonFile = (
 					await import(resolve(dir, 'package.json'), {
@@ -140,14 +139,14 @@ export class Package {
 
 		// 使用缓存的情况
 		if (this.storeDir) {
-			console.log(
+			npmlog.verbose(
 				'使用缓存的时入口文件地址',
 				await _getRootFile(this.cacheFilePath)
 			)
 			return await _getRootFile(this.cacheFilePath)
 		} else {
 			// 没有缓存的情况
-			console.log(
+			npmlog.verbose(
 				'不使用缓存的时入口文件地址',
 				await _getRootFile(this.targetPath)
 			)
