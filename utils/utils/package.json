@@ -21,5 +21,8 @@
 	"scripts": {
 		"test": "node ./__tests__/utils.test.js"
 	},
-	"gitHead": "a9e4838fa9e19e35ac8e9f05e50a35e00ed1863e"
+	"gitHead": "a9e4838fa9e19e35ac8e9f05e50a35e00ed1863e",
+	"dependencies": {
+		"ora": "^8.0.1"
+	}
 }

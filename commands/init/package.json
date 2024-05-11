@@ -25,17 +25,19 @@
   "scripts": {
     "test": "node ./__tests__/@t-cli/init.test.js"
   },
-  "devDependencies": {
-    "@t-cli/command": "workspace:*",
-    "@t-cli/log": "workspace:*"
-  },
   "bugs": {
     "url": "https://github.com/fengxielove/t-cli/issues"
   },
   "gitHead": "a9e4838fa9e19e35ac8e9f05e50a35e00ed1863e",
   "dependencies": {
+    "@t-cli/command": "workspace:*",
+    "@t-cli/log": "workspace:*",
+    "@t-cli/package": "workspace:*",
+    "@t-cli/request": "workspace:*",
+    "@t-cli/utils": "workspace:*",
     "fs-extra": "^11.2.0",
     "inquirer": "^9.2.20",
-    "semver": "^7.6.0"
+    "semver": "^7.6.0",
+    "userhome": "^1.0.0"
   }
 }

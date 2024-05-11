@@ -1,11 +1,17 @@
 import { readdirSync } from 'fs'
+import { resolve } from 'path'
 
 import inquirer from 'inquirer'
 import { emptyDirSync } from 'fs-extra'
 import { valid } from 'semver'
+import userHome from 'userhome'
 
 import Command from '@t-cli/command'
 import npmlog from '@t-cli/log'
+import { Package } from '@t-cli/package'
+import { spinnerStart } from '@t-cli/utils'
+
+import { getNpmTemplates } from './getTemplates.js'
 
 const TYPE_PROJECT = 'project'
 const TYPE_COMPONENT = 'component'
@@ -22,6 +28,7 @@ export class InitCommand extends Command {
 		try {
 			// 	1. 准备阶段
 			const projectInfo = await this.prepare()
+			this.projectInfo = projectInfo
 			if (projectInfo) {
 				npmlog.verbose('projectInfo', projectInfo)
 				// 	2. 下载模版
@@ -34,6 +41,10 @@ export class InitCommand extends Command {
 	}
 
 	async prepare() {
+		this.templates = await getNpmTemplates()
+		if (!this.templates || this.templates.length === 0) {
+			throw new Error('项目模板不存在')
+		}
 		const localPath = process.cwd()
 		// 	1. 判断当前目录是否为空
 		if (!this.isDirEmpty(localPath)) {
@@ -133,6 +144,12 @@ export class InitCommand extends Command {
 					filter: function (v) {
 						return valid(v) ? valid(v) : v
 					}
+				},
+				{
+					type: 'list',
+					name: 'projectTemplate',
+					message: '请选择项目模板',
+					choices: this.createTemplateChoice()
 				}
 			])
 
@@ -146,6 +163,13 @@ export class InitCommand extends Command {
 		return projectInfo
 	}
 
+	createTemplateChoice() {
+		return this.templates.map((item) => ({
+			value: item.npmName,
+			name: item.name
+		}))
+	}
+
 	/**
 	 * 1.通过项目模板API获取项目模板信息
 	 * 1.1.通过midway搭建接口
@@ -153,7 +177,42 @@ export class InitCommand extends Command {
 	 * 1.3.通过midway获取mongodb中的数据并返回
 	 * @returns {Promise<void>}
 	 */
-	async downloadTemplate() {}
+	async downloadTemplate() {
+		const { projectTemplate } = this.projectInfo
+		const templateInfo = this.templates.find(
+			(item) => item.npmName === projectTemplate
+		)
+		const targetPath = resolve(userHome(), '.t-cli', 'template')
+		const storeDir = resolve(userHome(), '.t-cli', 'template', 'node_modules')
+		const { npmName, version } = templateInfo
+		const templateNpm = new Package({
+			targetPath,
+			storeDir,
+			packageName: npmName,
+			packageVersion: version
+		})
+		npmlog.verbose('templateNpm', templateNpm)
+		// 如果本地没有就安装
+		if (!(await templateNpm.exists())) {
+			const spinner = spinnerStart()
+			try {
+				await templateNpm.install()
+				spinner.succeed('模版下载成功!')
+			} catch (error) {
+				npmlog.error(error.message)
+				spinner.fail('模版下载失败，请检查版本号')
+			}
+		} else {
+			const spinner = spinnerStart()
+			try {
+				await templateNpm.update()
+				spinner.succeed('模版更新成功!')
+			} catch (error) {
+				npmlog.error(error.message)
+				spinner.fail('模版更新失败，请检查版本号')
+			}
+		}
+	}
 }
 
 /**
