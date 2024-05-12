@@ -118,53 +118,60 @@ export class InitCommand extends Command {
 			projectNameIsValid = true
 			projectInfo.projectName = this.projectName
 		}
-		if (type === TYPE_PROJECT) {
-			const projectNamePrompt = {
+		this.templates = this.templates.filter((template) => template.tag === type)
+		npmlog.verbose('过滤后的npm模板列表', this.templates)
+
+		const projectNamePrompt = {
+			type: 'input',
+			name: 'projectName',
+			message: type === TYPE_PROJECT ? '请输入项目名称' : '请输入组件名称',
+			default: '',
+			validate: function (v) {
+				const done = this.async()
+
+				if (isValidateProjectName(v)) {
+					done(null, true)
+				} else {
+					done(
+						type === TYPE_PROJECT
+							? '请输入合法的项目名称'
+							: '请输入合法的组件名称'
+					)
+				}
+			}
+		}
+		const createProjectPrompt = [
+			{
 				type: 'input',
-				name: 'projectName',
-				message: '请输入项目名称',
-				default: '',
+				name: 'projectVersion',
+				message:
+					type === TYPE_PROJECT ? '请输入项目版本号' : '请输入组件版本号',
+				default: '1.0.0',
 				validate: function (v) {
 					const done = this.async()
-
-					if (isValidateProjectName(v)) {
+					if (valid(v)) {
 						done(null, true)
 					} else {
-						done('请输入合法的项目名')
-					}
-				}
-			}
-
-			const createProjectPrompt = [
-				{
-					type: 'input',
-					name: 'projectVersion',
-					message: '请输入项目版本号',
-					default: '1.0.0',
-					validate: function (v) {
-						const done = this.async()
-						if (valid(v)) {
-							done(null, true)
-						} else {
-							done('请输入合法的版本号')
-						}
-					},
-					filter: function (v) {
-						return valid(v) ? valid(v) : v
+						done('请输入合法的版本号')
 					}
 				},
-				{
-					type: 'list',
-					name: 'projectTemplate',
-					message: '请选择项目模板',
-					choices: this.createTemplateChoice()
+				filter: function (v) {
+					return valid(v) ? valid(v) : v
 				}
-			]
-			if (!projectNameIsValid) {
-				createProjectPrompt.unshift(projectNamePrompt)
+			},
+			{
+				type: 'list',
+				name: 'projectTemplate',
+				message: type === TYPE_PROJECT ? '请选择项目模板' : '请选择组件模板',
+				choices: this.createTemplateChoice()
 			}
-			const project = await inquirer.prompt(createProjectPrompt)
+		]
+		if (!projectNameIsValid) {
+			createProjectPrompt.unshift(projectNamePrompt)
+		}
 
+		if (type === TYPE_PROJECT) {
+			const project = await inquirer.prompt(createProjectPrompt)
 			projectInfo = {
 				...projectInfo,
 				type,
@@ -172,6 +179,20 @@ export class InitCommand extends Command {
 			}
 		} else if (type === TYPE_COMPONENT) {
 			// 	TODO:
+			const descriptionPrompt = {
+				type: 'input',
+				name: 'componentDescription',
+				message: '请输入组件描述信息',
+				default: ''
+			}
+			createProjectPrompt.push(descriptionPrompt)
+			// 	获取创建组件的基本信息
+			const component = await inquirer.prompt(createProjectPrompt)
+			projectInfo = {
+				...projectInfo,
+				type,
+				...component
+			}
 		}
 
 		// 将项目名称改为驼峰格式
@@ -182,8 +203,13 @@ export class InitCommand extends Command {
 			)
 			npmlog.verbose('className', projectInfo.className)
 		}
+		// 添加version字段，对应 ejs 渲染中的version字段
 		if (projectInfo?.projectVersion) {
 			projectInfo.version = projectInfo.projectVersion
+		}
+		// 添加description字段，对应 ejs 渲染中的description字段
+		if (projectInfo?.componentDescription) {
+			projectInfo.description = projectInfo?.componentDescription
 		}
 
 		return projectInfo
@@ -234,11 +260,11 @@ export class InitCommand extends Command {
 			const spinner = spinnerStart()
 			try {
 				await templateNpm.update()
-				spinner.succeed('模版更新成功!')
+				spinner.succeed('本地模版更新成功')
 				this.templateNpm = templateNpm
 			} catch (error) {
 				npmlog.error(error.message)
-				spinner.fail('模版更新失败，请检查版本号')
+				spinner.fail('本地模版更新失败，请检查版本号')
 			}
 		}
 	}
@@ -273,9 +299,13 @@ export class InitCommand extends Command {
 		const targetPath = process.cwd()
 
 		ensureAndCopyFiles(templatePath, targetPath)
-		const ignore = ['node_modules', 'public/**', 'index.html']
-		await this.ejsRender(ignore)
-		const { installCommand, startCommand } = this.templateInfo
+		const { installCommand, startCommand, ignore } = this.templateInfo
+		// const ignore = ['node_modules', 'public/**', 'index.html']
+		npmlog.verbose('ignore', ignore?.split(',') ?? [])
+		await this.ejsRender({
+			ignore: (ignore?.split(',') ?? []).concat(['**/node_modules/**'])
+		})
+
 		await executeCommand(installCommand, '安装模板依赖')
 		await executeCommand(startCommand, '启动模版服务')
 	}
