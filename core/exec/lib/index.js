@@ -2,10 +2,10 @@ import { resolve } from 'path'
 
 import { Package } from '@t-cli/package'
 import npmlog from '@t-cli/log'
-import { execSync } from '@t-cli/utils'
+// import { execSync } from '@t-cli/utils'
 
 const SETTINGS = {
-	init: '@t-cli/command'
+	init: '@t-cli/init'
 }
 
 const CACHE_DIR = 'test-dependencies'
