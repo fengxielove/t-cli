@@ -7,7 +7,7 @@ import userHome from 'userhome'
 import kebabCase from 'kebab-case'
 import { globSync } from 'glob'
 import ejs from 'ejs'
-import { writeFileSync } from 'fs'
+import { writeFileSync, existsSync } from 'fs'
 
 import Command from '@t-cli/command'
 import npmlog from '@t-cli/log'
@@ -21,7 +21,10 @@ const TEMPLATE_TYPE_NORMAL = 'normal'
 const TEMPLATE_TYPE_CUSTOM = 'custom'
 const WHITE_COMMAND = ['npm', 'pnpm', 'yarn']
 
-export class InitCommand extends Command {
+class InitCommand extends Command {
+	constructor(argv) {
+		super(argv) // 调用父类 Command 的构造函数
+	}
 	init() {
 		this.projectName = this._argv[0] || ''
 		this.force = !!this._cmd.getOptionValue('force')
@@ -309,7 +312,7 @@ export class InitCommand extends Command {
 		await executeCommand(installCommand, '安装模板依赖')
 		await executeCommand(startCommand, '启动模版服务')
 	}
-	ejsRender(options) {
+	async ejsRender(options) {
 		const dir = process.cwd()
 		let projectInfo = this.projectInfo
 		const files = globSync('**', {
@@ -317,6 +320,7 @@ export class InitCommand extends Command {
 			nodir: true,
 			ignore: options.ignore || ''
 		})
+
 		if (files) {
 			Promise.all(
 				files.map((file) => {
@@ -342,8 +346,44 @@ export class InitCommand extends Command {
 			return []
 		}
 	}
+	// 安装自定义模版
 	async installCustomTemplate() {
 		npmlog.verbose('自定义安装')
+		if (await this.templateNpm.getRootFilePath()) {
+			const rootFile = await this.templateNpm.getRootFilePath()
+			if (!existsSync(rootFile)) {
+				throw new Error('自定义模版入口文件不存在')
+			}
+			npmlog.verbose(
+				'sourcePath',
+				resolve(this.templateNpm.cacheFilePath, 'template')
+			)
+			const options = {
+				templateInfo: this.templateInfo,
+				projectInfo: this.projectInfo,
+				sourcePath: resolve(this.templateNpm.cacheFilePath, 'template'),
+				targetPath: process.cwd()
+			}
+
+			const rootFileCode = (await import(rootFile)).default
+			if (typeof rootFileCode === 'function') {
+				rootFileCode(options, () => {
+					npmlog.info('项目创建成功，请执行如下命令启动项目：')
+					npmlog.info('pnpm install')
+					npmlog.info('pnpm dev')
+				})
+
+				// const execResult = await execSync(
+				// 	'node',
+				// 	['-e', `(${rootFileCode})(${JSON.stringify(options)})`],
+				// 	{
+				// 		stdio: 'inherit',
+				// 		cwd: process.cwd()
+				// 	}
+				// )
+				// console.log('入口文件执行结果', execResult)
+			}
+		}
 	}
 }
 
@@ -399,6 +439,7 @@ const isValidateProjectName = (name) => {
 /**
  * 默认导出 init 初始化的执行函数，在入口文件那里动态导入执行
  */
+
 const init = (args) => {
 	return new InitCommand(args)
 }

@@ -6,6 +6,7 @@ export const LOWEST_NODE_VERSION = '18.0.0'
 
 class Command {
 	constructor(argv) {
+		console.log('base Command', argv)
 		if (!argv) {
 			throw new Error('参数不能为空')
 		}
@@ -16,7 +17,7 @@ class Command {
 			throw new Error('参数列表为空')
 		}
 		this._argv = argv
-		new Promise((resolve, reject) => {
+		new Promise(() => {
 			let chain = Promise.resolve()
 			chain = chain.then(() => this.checkNodeVersion())
 			chain = chain.then(() => this.initArgs())

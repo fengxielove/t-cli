@@ -114,6 +114,9 @@ importers:
       '@t-cli/package':
         specifier: workspace:*
         version: link:../../models/package
+      '@t-cli/utils':
+        specifier: workspace:*
+        version: link:../../utils/utils
 
   models/command:
     dependencies:
